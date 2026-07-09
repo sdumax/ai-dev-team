@@ -36,6 +36,9 @@ func runInstall(srcFS fs.FS, target string) error {
 	if origin, err := getGitOrigin(); err == nil {
 		os.WriteFile(filepath.Join(target, ".git-origin"), []byte(origin+"\n"), 0644)
 	}
+	if commitHash != "dev" {
+		os.WriteFile(filepath.Join(target, ".git-commit"), []byte(commitHash+"\n"), 0644)
+	}
 
 	if err := extractFS(srcFS, ".ai", filepath.Join(target, ".ai")); err != nil {
 		return fmt.Errorf("extract .ai: %w", err)

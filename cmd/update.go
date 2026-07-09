@@ -16,7 +16,7 @@ func NewUpdateCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "update",
 		Short: "Update AI Dev Team from git",
-		Long:  `Clones the latest source, rebuilds the binary, and updates the global installation.`,
+		Long:  `Checks for updates and rebuilds from source if a newer version is available.`,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runUpdate()
@@ -37,6 +37,18 @@ func runUpdate() error {
 		}
 	}
 
+	remoteHash, err := getRemoteHEAD(origin)
+	if err != nil {
+		fmt.Printf("  Warning: could not check remote (%s)\n", err)
+	} else if remoteHash == commitHash {
+		fmt.Println("  Already up to date")
+		return nil
+	} else if commitHash == "dev" {
+		fmt.Println("  Development build — updating...")
+	} else {
+		fmt.Printf("  New commits available (%.7s... -> %.7s...)\n", commitHash, remoteHash)
+	}
+
 	fmt.Printf("  Cloning from %s\n", origin)
 
 	tmpDir, err := os.MkdirTemp("", "devteam-update")
@@ -53,7 +65,9 @@ func runUpdate() error {
 	}
 
 	fmt.Println("  Building binary...")
-	build := exec.Command("go", "build", "-o", filepath.Join(tmpDir, "devteam"), ".")
+	build := exec.Command("go", "build",
+		"-ldflags", "-X devteam/cmd.commitHash="+remoteHash,
+		"-o", filepath.Join(tmpDir, "devteam"), ".")
 	build.Dir = tmpDir
 	build.Stdout = os.Stdout
 	build.Stderr = os.Stderr
@@ -69,6 +83,7 @@ func runUpdate() error {
 	if err := os.WriteFile(binDest, exe, 0755); err != nil {
 		return fmt.Errorf("write binary: %w", err)
 	}
+	os.WriteFile(filepath.Join(dir, ".git-commit"), []byte(remoteHash+"\n"), 0644)
 	fmt.Println("  ✓ devteam binary updated")
 
 	aiDir := filepath.Join(tmpDir, ".ai")
@@ -85,6 +100,19 @@ func runUpdate() error {
 	fmt.Println("=== Update complete ===")
 	fmt.Println("  Run 'devteam activate' in each project to refresh symlinks.")
 	return nil
+}
+
+func getRemoteHEAD(origin string) (string, error) {
+	cmd := exec.Command("git", "ls-remote", origin, "HEAD")
+	out, err := cmd.Output()
+	if err != nil {
+		return "", fmt.Errorf("git ls-remote: %w", err)
+	}
+	fields := strings.Fields(string(out))
+	if len(fields) == 0 {
+		return "", fmt.Errorf("empty response from remote")
+	}
+	return fields[0], nil
 }
 
 func copyDir(src, dst string) error {
