@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -31,6 +32,10 @@ func runInstall(srcFS fs.FS, target string) error {
 	fmt.Println("=== AI Dev Team Install ===")
 
 	os.MkdirAll(target, 0755)
+
+	if origin, err := getGitOrigin(); err == nil {
+		os.WriteFile(filepath.Join(target, ".git-origin"), []byte(origin+"\n"), 0644)
+	}
 
 	if err := extractFS(srcFS, ".ai", filepath.Join(target, ".ai")); err != nil {
 		return fmt.Errorf("extract .ai: %w", err)
@@ -80,6 +85,16 @@ func extractFS(srcFS fs.FS, prefix, dst string) error {
 		}
 		return os.WriteFile(target, data, 0644)
 	})
+}
+
+func getGitOrigin() (string, error) {
+	cmd := exec.Command("git", "remote", "get-url", "origin")
+	cmd.Stderr = nil
+	out, err := cmd.Output()
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(string(out)), nil
 }
 
 func addToPath(dir string) {
