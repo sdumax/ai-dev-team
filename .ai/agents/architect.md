@@ -1,3 +1,13 @@
+---
+description: System Architect — designs technical solutions and ensures architectural integrity
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash: deny
+  glob: allow
+  grep: allow
+---
 # Architect Agent
 
 ## Role

@@ -170,11 +170,12 @@ This phase loops through DAG layers until all tickets are complete.
 
    a. Move ticket from `docs/tickets/active/todo/` to `docs/tickets/active/in_progress/`.
    b. Update manifest: Status = IN PROGRESS.
-   c. Spawn a **Developer sub-agent** via the Task tool:
+   c. Spawn the **Developer** registered sub-agent:
 
       ```
-      Type: general
-      Prompt: .ai/agents/developer.md + ticket content + project docs
+      Type: developer
+      Prompt: Implement ticket T-NNNN: [ticket content + project docs]
+      (The agent's system prompt from .ai/agents/developer.md is loaded automatically.)
       ```
 
    d. Wait for Developer to complete. They report:
@@ -189,11 +190,11 @@ This phase loops through DAG layers until all tickets are complete.
 
 3. **For each completed ticket:**
 
-   a. Spawn a **Reviewer sub-agent**:
+   a. Spawn the **Reviewer** registered sub-agent:
 
       ```
-      Type: general
-      Prompt: .ai/agents/reviewer.md + PR URL + ticket
+      Type: reviewer
+      Prompt: Review PR [URL] for ticket T-NNNN
       ```
 
    b. Handle result:
@@ -208,11 +209,11 @@ This phase loops through DAG layers until all tickets are complete.
 
    a. Update manifest: Status = REVIEW.
    b. Move ticket to `docs/tickets/active/review/`.
-   c. Spawn a **QA sub-agent**:
+   c. Spawn the **QA** registered sub-agent:
 
       ```
-      Type: general
-      Prompt: .ai/agents/qa.md + PR URL + ticket
+      Type: qa
+      Prompt: Validate PR [URL] for ticket T-NNNN against its acceptance criteria
       ```
 
    d. Handle result:
@@ -224,11 +225,11 @@ This phase loops through DAG layers until all tickets are complete.
 
 5. **For each QA-passed ticket:**
 
-   a. Spawn a **Doc Writer sub-agent**:
+   a. Spawn the **Doc Writer** registered sub-agent:
 
       ```
-      Type: general
-      Prompt: .ai/agents/doc-writer.md + ticket Implementation Record
+      Type: doc-writer
+      Prompt: Update documentation for completed ticket T-NNNN
       ```
 
 6. **After layer completes:**

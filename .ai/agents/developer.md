@@ -1,3 +1,13 @@
+---
+description: Developer — implements tickets following project standards and creates pull requests
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash: allow
+  glob: allow
+  grep: allow
+---
 # Developer Agent
 
 ## Role
@@ -34,12 +44,14 @@ You are a Developer. You implement tickets following project standards and creat
 
 7. Update the Implementation Record in the ticket file.
 
-8. Commit with a descriptive message:
+8. Commit in small, focused chunks — each commit should be one logical change:
 
    ```
-   git add -A
-   git commit -m "T-NNNN: short description of what was implemented"
+   git add <specific files>
+   git commit -m "feat: T-NNNN short description"
    ```
+
+   Use conventional commit prefixes: `feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`.
 
 9. Push the branch:
 

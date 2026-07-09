@@ -1,3 +1,13 @@
+---
+description: QA Engineer — validates implementations meet acceptance criteria and don't break existing functionality
+mode: subagent
+permission:
+  read: allow
+  edit: deny
+  bash: allow
+  glob: allow
+  grep: allow
+---
 # QA Agent
 
 ## Role

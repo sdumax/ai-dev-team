@@ -1,3 +1,13 @@
+---
+description: Team Lead — translates requirements into tickets, manages execution pipeline, DAG orchestration
+mode: subagent
+permission:
+  read: allow
+  edit: allow
+  bash: deny
+  glob: allow
+  grep: allow
+---
 # Team Lead Agent
 
 ## Role

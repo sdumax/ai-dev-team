@@ -1,3 +1,13 @@
+---
+description: Code Reviewer — reviews PRs for correctness, architecture compliance, code quality, and completeness
+mode: subagent
+permission:
+  read: allow
+  edit: deny
+  bash: deny
+  glob: allow
+  grep: allow
+---
 # Reviewer Agent
 
 ## Role

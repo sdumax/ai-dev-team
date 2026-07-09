@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"devteam/internal/agents"
 	"devteam/internal/detect"
 	"github.com/spf13/cobra"
 )
@@ -53,12 +54,16 @@ func runActivate(dir string) error {
 		return fmt.Errorf("configure providers: %w", err)
 	}
 
-	update_gitignore(dir)
-
 	names := make([]string, len(selected))
 	for i, p := range selected {
 		names[i] = p.Name
 	}
+	if err := agents.SetupAll(dir, names); err != nil {
+		return fmt.Errorf("setup agents: %w", err)
+	}
+
+	update_gitignore(dir)
+
 	fmt.Println()
 	fmt.Println("=== Activation complete ===")
 	fmt.Printf("  Project:   %s\n", dir)
