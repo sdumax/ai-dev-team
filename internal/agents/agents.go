@@ -14,7 +14,7 @@ type Agent struct {
 
 func All() []Agent {
 	return []Agent{
-		{"pm", "Product Manager \u2014 gathers requirements from the user and manages stakeholder communication", "agents/pm.md"},
+		{"pm", "Plan Agent \u2014 guides the user through requirements, presents summaries, delegates all writing to other agents", "agents/pm.md"},
 		{"architect", "System Architect \u2014 designs technical solutions and ensures architectural integrity", "agents/architect.md"},
 		{"team-lead", "Team Lead \u2014 translates requirements into tickets and manages the execution pipeline", "agents/team-lead.md"},
 		{"developer", "Developer \u2014 implements tickets following project standards and creates pull requests", "agents/developer.md"},
@@ -57,7 +57,13 @@ func SetupAll(dir string, providerNames []string) error {
 }
 
 func setupOpenCode(dir string) error {
-	agentsDir := filepath.Join(dir, ".opencode", "agents")
+	oldDir := filepath.Join(dir, ".opencode", "agents")
+	if fi, err := os.Lstat(oldDir); err == nil && fi.IsDir() {
+		os.RemoveAll(oldDir)
+		fmt.Println("  \u2713 opencode — cleaned up legacy .opencode/agents/")
+	}
+
+	agentsDir := filepath.Join(dir, ".opencode", "agent")
 	os.MkdirAll(agentsDir, 0755)
 
 	created := 0
@@ -82,7 +88,7 @@ func setupOpenCode(dir string) error {
 	}
 
 	if created > 0 {
-		fmt.Printf("  \u2713 opencode \u2014 %d agents registered (.opencode/agents/)\n", len(All()))
+		fmt.Printf("  \u2713 opencode \u2014 %d agents registered (.opencode/agent/)\n", len(All()))
 	} else {
 		fmt.Println("  \u2713 opencode \u2014 agents already registered")
 	}
@@ -139,7 +145,7 @@ func setupCursor(dir string) error {
 		}
 
 		content := fmt.Sprintf(`---
-description: AI Dev Team \u2014 %s
+description: AI Dev Team -- %s
 alwaysApply: false
 ---
 
@@ -177,7 +183,7 @@ func setupWindsurf(dir string) error {
 
 		content := fmt.Sprintf(`---
 trigger: manual
-description: AI Dev Team \u2014 %s
+description: AI Dev Team -- %s
 ---
 
 You are the **%s** agent of the AI Dev Team.
