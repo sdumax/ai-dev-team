@@ -198,21 +198,41 @@ func findTeamDir() (string, error) {
 }
 
 func update_gitignore(dir string) {
+	entries := []string{".ai/", ".opencode/"}
 	gf := filepath.Join(dir, ".gitignore")
+
 	data, err := os.ReadFile(gf)
 	if err != nil {
-		os.WriteFile(gf, []byte(".ai/\n"), 0644)
-		fmt.Println("  ✓ .gitignore — created with .ai/")
+		var out strings.Builder
+		for _, e := range entries {
+			out.WriteString(e + "\n")
+		}
+		os.WriteFile(gf, []byte(out.String()), 0644)
+		fmt.Println("  ✓ .gitignore — created")
 		return
 	}
-	if strings.Contains(string(data), ".ai/") {
-		fmt.Println("  ✓ .gitignore — .ai/ already ignored")
+
+	content := string(data)
+	var missing []string
+	for _, e := range entries {
+		if strings.Contains(content, e) {
+			fmt.Printf("  ✓ .gitignore — %s already ignored\n", e)
+		} else {
+			missing = append(missing, e)
+		}
+	}
+
+	if len(missing) == 0 {
 		return
 	}
+
 	f, _ := os.OpenFile(gf, os.O_APPEND|os.O_WRONLY, 0644)
 	if f != nil {
 		defer f.Close()
-		f.WriteString("\n.ai/\n")
-		fmt.Println("  ✓ .gitignore — added .ai/")
+		for _, e := range missing {
+			f.WriteString("\n" + e)
+		}
+		f.WriteString("\n")
+		fmt.Printf("  ✓ .gitignore — added %s\n", strings.Join(missing, ", "))
 	}
 }

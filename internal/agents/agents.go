@@ -1,6 +1,7 @@
 package agents
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -66,31 +67,33 @@ func setupOpenCode(dir string) error {
 	agentsDir := filepath.Join(dir, ".opencode", "agent")
 	os.MkdirAll(agentsDir, 0755)
 
-	created := 0
+	synced := 0
+	skipped := 0
 	for _, a := range All() {
-		linkPath := filepath.Join(agentsDir, a.Name+".md")
+		sourcePath := filepath.Join(dir, ".ai", a.SourceFile)
+		targetPath := filepath.Join(agentsDir, a.Name+".md")
 
-		if fi, err := os.Lstat(linkPath); err == nil && fi.Mode()&os.ModeSymlink != 0 {
+		srcData, err := os.ReadFile(sourcePath)
+		if err != nil {
+			return fmt.Errorf("read %s: %w", a.SourceFile, err)
+		}
+
+		existing, err := os.ReadFile(targetPath)
+		if err == nil && bytes.Equal(srcData, existing) {
+			skipped++
 			continue
 		}
 
-		sourcePath := filepath.Join(dir, ".ai", a.SourceFile)
-		os.Remove(linkPath)
-
-		rel, err := filepath.Rel(filepath.Dir(linkPath), sourcePath)
-		if err != nil {
-			return fmt.Errorf("relative path for %s: %w", a.Name, err)
+		if err := os.WriteFile(targetPath, srcData, 0644); err != nil {
+			return fmt.Errorf("write %s: %w", a.Name, err)
 		}
-		if err := os.Symlink(rel, linkPath); err != nil {
-			return fmt.Errorf("symlink %s: %w", a.Name, err)
-		}
-		created++
+		synced++
 	}
 
-	if created > 0 {
-		fmt.Printf("  \u2713 opencode \u2014 %d agents registered (.opencode/agent/)\n", len(All()))
+	if synced > 0 {
+		fmt.Printf("  \u2713 opencode \u2014 %d agents synced (.opencode/agent/)\n", len(All()))
 	} else {
-		fmt.Println("  \u2713 opencode \u2014 agents already registered")
+		fmt.Printf("  \u2713 opencode \u2014 %d agents up to date\n", len(All()))
 	}
 	return nil
 }
