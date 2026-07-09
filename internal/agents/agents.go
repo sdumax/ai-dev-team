@@ -1,7 +1,6 @@
 package agents
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -58,43 +57,13 @@ func SetupAll(dir string, providerNames []string) error {
 }
 
 func setupOpenCode(dir string) error {
-	oldDir := filepath.Join(dir, ".opencode", "agents")
-	if fi, err := os.Lstat(oldDir); err == nil && fi.IsDir() {
-		os.RemoveAll(oldDir)
-		fmt.Println("  \u2713 opencode — cleaned up legacy .opencode/agents/")
-	}
-
-	agentsDir := filepath.Join(dir, ".opencode", "agent")
-	os.MkdirAll(agentsDir, 0755)
-
-	synced := 0
-	skipped := 0
-	for _, a := range All() {
-		sourcePath := filepath.Join(dir, ".ai", a.SourceFile)
-		targetPath := filepath.Join(agentsDir, a.Name+".md")
-
-		srcData, err := os.ReadFile(sourcePath)
-		if err != nil {
-			return fmt.Errorf("read %s: %w", a.SourceFile, err)
+	for _, d := range []string{".opencode", ".opencode/agents", ".opencode/agent"} {
+		path := filepath.Join(dir, d)
+		if fi, err := os.Lstat(path); err == nil && fi.IsDir() {
+			os.RemoveAll(path)
 		}
-
-		existing, err := os.ReadFile(targetPath)
-		if err == nil && bytes.Equal(srcData, existing) {
-			skipped++
-			continue
-		}
-
-		if err := os.WriteFile(targetPath, srcData, 0644); err != nil {
-			return fmt.Errorf("write %s: %w", a.Name, err)
-		}
-		synced++
 	}
-
-	if synced > 0 {
-		fmt.Printf("  \u2713 opencode \u2014 %d agents synced (.opencode/agent/)\n", len(All()))
-	} else {
-		fmt.Printf("  \u2713 opencode \u2014 %d agents up to date\n", len(All()))
-	}
+	fmt.Println("  \u2713 opencode \u2014 agents loaded globally via OPENCODE_CONFIG_DIR")
 	return nil
 }
 

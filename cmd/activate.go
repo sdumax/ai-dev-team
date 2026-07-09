@@ -198,7 +198,7 @@ func findTeamDir() (string, error) {
 }
 
 func update_gitignore(dir string) {
-	entries := []string{".ai/", ".opencode/"}
+	entries := []string{".ai/"}
 	gf := filepath.Join(dir, ".gitignore")
 
 	data, err := os.ReadFile(gf)

@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"devteam/internal/agents"
 	"github.com/spf13/cobra"
 )
 
@@ -59,6 +60,10 @@ func runInstall(srcFS fs.FS, target string) error {
 
 	os.Chmod(filepath.Join(target, ".ai", "init.sh"), 0755)
 
+	if err := setupOpenCodeGlobal(target); err != nil {
+		return fmt.Errorf("setup opencode agents: %w", err)
+	}
+
 	addToPath(target)
 
 	fmt.Printf("  Installed: %s\n", target)
@@ -100,12 +105,37 @@ func getGitOrigin() (string, error) {
 	return strings.TrimSpace(string(out)), nil
 }
 
+func setupOpenCodeGlobal(target string) error {
+	opencodeDir := filepath.Join(target, ".opencode", "agent")
+	os.MkdirAll(opencodeDir, 0755)
+
+	written := 0
+	for _, a := range agents.All() {
+		src := filepath.Join(target, ".ai", a.SourceFile)
+		dst := filepath.Join(opencodeDir, a.Name+".md")
+
+		data, err := os.ReadFile(src)
+		if err != nil {
+			return fmt.Errorf("read %s: %w", a.SourceFile, err)
+		}
+
+		if err := os.WriteFile(dst, data, 0644); err != nil {
+			return fmt.Errorf("write %s: %w", a.Name, err)
+		}
+		written++
+	}
+
+	fmt.Printf("  \u2713 opencode \u2014 %d agents registered globally\n", written)
+	return nil
+}
+
 func addToPath(dir string) {
 	rc := filepath.Join(os.Getenv("HOME"), ".bashrc")
 	if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".zshrc")); err == nil {
 		rc = filepath.Join(os.Getenv("HOME"), ".zshrc")
 	}
-	line := fmt.Sprintf("\n# AI Dev Team\nexport PATH=\"$PATH:%s\"\n", dir)
+	opencodeDir := filepath.Join(dir, ".opencode")
+	line := fmt.Sprintf("\n# AI Dev Team\nexport PATH=\"$PATH:%s\"\nexport OPENCODE_CONFIG_DIR=\"%s\"\n", dir, opencodeDir)
 
 	data, err := os.ReadFile(rc)
 	if err != nil {
