@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Agent struct {
@@ -57,13 +58,95 @@ func SetupAll(dir string, providerNames []string) error {
 }
 
 func setupOpenCode(dir string) error {
-	for _, d := range []string{".opencode", ".opencode/agents", ".opencode/agent"} {
-		path := filepath.Join(dir, d)
-		if fi, err := os.Lstat(path); err == nil && fi.IsDir() {
-			os.RemoveAll(path)
-		}
+	return nil
+}
+
+func CreateOpenCodeGlobal() error {
+	home := os.Getenv("HOME")
+	opencodeDir := filepath.Join(home, ".config", "opencode", "agent")
+	if err := os.MkdirAll(opencodeDir, 0755); err != nil {
+		return fmt.Errorf("create %s: %w", opencodeDir, err)
 	}
-	fmt.Println("  \u2713 opencode \u2014 agents loaded globally via OPENCODE_CONFIG_DIR")
+
+	created := 0
+	for _, a := range All() {
+		dst := filepath.Join(opencodeDir, a.Name+".md")
+		if _, err := os.Stat(dst); err == nil {
+			continue
+		}
+
+		src := filepath.Join(home, ".ai-dev-team", ".ai", a.SourceFile)
+		data, err := os.ReadFile(src)
+		if err != nil {
+			return fmt.Errorf("read %s: %w", a.SourceFile, err)
+		}
+
+		if err := os.WriteFile(dst, data, 0644); err != nil {
+			return fmt.Errorf("write %s: %w", a.Name, err)
+		}
+		created++
+	}
+
+	if created > 0 {
+		fmt.Printf("  ✓ opencode — %d agents installed to %s\n", created, opencodeDir)
+	} else {
+		fmt.Println("  ✓ opencode — agents already installed")
+	}
+	return nil
+}
+
+func UpdateAGENTSMD(dir string) error {
+	agentsPath := filepath.Join(dir, "AGENTS.md")
+	devteamBlock := `## DevTeam Flow
+
+This project uses the AI Dev Team multi-agent workflow.
+
+### Agent Delegation
+
+When using ` + "`plan`" + ` for planning tasks, delegate to these sub-agents:
+
+| Task | Delegate To |
+|------|-------------|
+| Requirements gathering | pm |
+| Architecture & design | architect |
+| Ticket breakdown | team-lead |
+
+When using ` + "`build`" + ` for implementation tasks, delegate to these sub-agents:
+
+| Task | Delegate To |
+|------|-------------|
+| Code implementation | developer |
+| Code review | reviewer |
+| Testing & QA | qa |
+| Documentation | doc-writer |
+`
+
+	data, err := os.ReadFile(agentsPath)
+	if err != nil {
+		if err := os.WriteFile(agentsPath, []byte(devteamBlock), 0644); err != nil {
+			return fmt.Errorf("write AGENTS.md: %w", err)
+		}
+		fmt.Println("  ✓ AGENTS.md — created with DevTeam delegation")
+		return nil
+	}
+
+	content := string(data)
+	if strings.Contains(content, "DevTeam Flow") {
+		fmt.Println("  ✓ AGENTS.md — DevTeam delegation already configured")
+		return nil
+	}
+
+	f, err := os.OpenFile(agentsPath, os.O_APPEND|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("open AGENTS.md: %w", err)
+	}
+	defer f.Close()
+
+	if !strings.HasSuffix(content, "\n") {
+		f.WriteString("\n")
+	}
+	f.WriteString("\n" + devteamBlock)
+	fmt.Println("  ✓ AGENTS.md — appended DevTeam delegation")
 	return nil
 }
 

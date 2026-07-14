@@ -22,6 +22,7 @@ Supports: opencode, Claude Code, Cursor, Copilot, Windsurf, Codex CLI`,
 
 	root.AddCommand(cmd.NewInstallCmd(aiFS))
 	root.AddCommand(cmd.NewActivateCmd())
+	root.AddCommand(cmd.NewCreateCmd())
 	root.AddCommand(cmd.NewUpdateCmd())
 	root.AddCommand(cmd.NewStatusCmd())
 	root.AddCommand(cmd.NewListCmd())

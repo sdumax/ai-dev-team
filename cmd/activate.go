@@ -64,6 +64,13 @@ func runActivate(dir string) error {
 
 	update_gitignore(dir)
 
+	if err := agents.CreateOpenCodeGlobal(); err != nil {
+		return fmt.Errorf("install agents: %w", err)
+	}
+	if err := agents.UpdateAGENTSMD(dir); err != nil {
+		return fmt.Errorf("update AGENTS.md: %w", err)
+	}
+
 	fmt.Println()
 	fmt.Println("=== Activation complete ===")
 	fmt.Printf("  Project:   %s\n", dir)

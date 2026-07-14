@@ -106,7 +106,8 @@ func getGitOrigin() (string, error) {
 }
 
 func setupOpenCodeGlobal(target string) error {
-	opencodeDir := filepath.Join(target, ".opencode", "agent")
+	home := os.Getenv("HOME")
+	opencodeDir := filepath.Join(home, ".config", "opencode", "agent")
 	os.MkdirAll(opencodeDir, 0755)
 
 	written := 0
@@ -125,7 +126,7 @@ func setupOpenCodeGlobal(target string) error {
 		written++
 	}
 
-	fmt.Printf("  \u2713 opencode \u2014 %d agents registered globally\n", written)
+	fmt.Printf("  ✓ opencode — %d agents installed to %s\n", written, opencodeDir)
 	return nil
 }
 
@@ -134,8 +135,7 @@ func addToPath(dir string) {
 	if _, err := os.Stat(filepath.Join(os.Getenv("HOME"), ".zshrc")); err == nil {
 		rc = filepath.Join(os.Getenv("HOME"), ".zshrc")
 	}
-	opencodeDir := filepath.Join(dir, ".opencode")
-	line := fmt.Sprintf("\n# AI Dev Team\nexport PATH=\"$PATH:%s\"\nexport OPENCODE_CONFIG_DIR=\"%s\"\n", dir, opencodeDir)
+	line := fmt.Sprintf("\n# AI Dev Team\nexport PATH=\"$PATH:%s\"\n", dir)
 
 	data, err := os.ReadFile(rc)
 	if err != nil {
