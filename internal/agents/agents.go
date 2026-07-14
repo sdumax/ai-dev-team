@@ -22,6 +22,7 @@ func All() []Agent {
 		{"reviewer", "Code Reviewer \u2014 reviews PRs for correctness, architecture compliance, code quality, and completeness", "agents/reviewer.md"},
 		{"qa", "QA Engineer \u2014 validates implementations meet acceptance criteria and don't break existing functionality", "agents/qa.md"},
 		{"doc-writer", "Documentation Writer \u2014 keeps project documentation accurate and up to date", "agents/doc-writer.md"},
+		{"ui-ux-designer", "UI/UX Designer \u2014 reviews designs for accessibility, responsiveness, and design system compliance", "agents/ui-ux-designer.md"},
 	}
 }
 
@@ -101,17 +102,25 @@ func UpdateAGENTSMD(dir string) error {
 
 This project uses the AI Dev Team multi-agent workflow.
 
+### Mandatory Workflow
+
+Unless **"OVERRIDE WORKFLOW"** is stated, follow this sequence:
+
+1. **Plan** → 2. **Write Tickets** → 3. **Pick Tickets to Build**
+
 ### Agent Delegation
 
-When using ` + "`plan`" + ` for planning tasks, delegate to these sub-agents:
+#### Plan Mode (Steps 1-2: Read-only, tickets only)
 
 | Task | Delegate To |
 |------|-------------|
 | Requirements gathering | pm |
 | Architecture & design | architect |
 | Ticket breakdown | team-lead |
+| Design requirements | ui-ux-designer |
+| Accessibility planning | ui-ux-designer |
 
-When using ` + "`build`" + ` for implementation tasks, delegate to these sub-agents:
+#### Build Mode (Step 3: Full implementation)
 
 | Task | Delegate To |
 |------|-------------|
@@ -119,6 +128,8 @@ When using ` + "`build`" + ` for implementation tasks, delegate to these sub-age
 | Code review | reviewer |
 | Testing & QA | qa |
 | Documentation | doc-writer |
+| Design compliance | ui-ux-designer |
+| Accessibility audits | ui-ux-designer |
 `
 
 	data, err := os.ReadFile(agentsPath)
