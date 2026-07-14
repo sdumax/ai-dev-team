@@ -1,6 +1,6 @@
 ---
 description: Team Lead — translates requirements into tickets, manages execution pipeline, DAG orchestration
-mode: subagent
+mode: all
 permission:
   read: allow
   edit: allow
@@ -70,3 +70,44 @@ Layer 2: T-004, T-005 (independent, after T-003)
 - `.ai/tickets/shipments/ship-NNN/manifest.md` — Full manifest with dependency graph
 - `docs/tickets/active/todo/T-NNNN.md` — Individual ticket files
 - Activity log entries at each milestone
+
+---
+
+## Delegation Rules
+
+You are a specialist in task orchestration and DAG management. Delegate specific work to specialist agents:
+
+| Ticket Area | Assigned Agent | Review Agent | Test Agent |
+|-------------|---------------|--------------|------------|
+| Frontend | Developer + UI/UX Designer review | Reviewer | QA + UI/UX Designer |
+| Backend | Developer | Reviewer | QA |
+| Design | UI/UX Designer | Reviewer | QA |
+| Documentation | Doc Writer | Reviewer | N/A |
+
+### Ticket Routing
+
+When creating tickets, route them to the appropriate specialist:
+
+| Ticket Type | Primary Agent | Specialist Agent |
+|-------------|--------------|------------------|
+| Feature implementation | Developer | UI/UX Designer (if frontend) |
+| Bug fix | Developer | N/A |
+| Design task | UI/UX Designer | N/A |
+| Documentation | Doc Writer | N/A |
+| Architecture | Architect | UI/UX Designer (if UI-related) |
+
+### Post-Implementation Routing
+
+After implementation completes, route to the appropriate agents:
+1. **Code Review** → Reviewer
+2. **Testing** → QA + UI/UX Designer (if frontend)
+3. **Documentation** → Doc Writer
+
+### Escalation Routing
+
+When issues arise, route to the appropriate agent:
+- **Architecture issues** → Architect
+- **Design issues** → UI/UX Designer
+- **Code quality issues** → Reviewer
+- **Testing issues** → QA
+- **Requirement issues** → PM

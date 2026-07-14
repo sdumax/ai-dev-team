@@ -41,32 +41,12 @@ The user takes control of the sequence.
 
 ## Pre-Flight: Guardrails Check
 
-Before starting the workflow, check for coding standards:
+Before starting the workflow, execute the guardrails check from `.ai/standards/guardrails.md`:
 
-1. Search for coding standards in:
-   - `.ai/standards/coding-standards.md`
-   - `docs/coding-standards.md`
-   - `CONTRIBUTING.md` (look for standards/coding section)
-   - `.editorconfig`
-   - Linter config files (`.eslintrc`, `.prettierrc`, `golangci-lint.yml`, etc.)
-
-2. If found:
-   - Note the standards file location
-   - All agents will reference it during execution
-
-3. If NOT found:
-   **PAUSE AND WARN the user:**
-
-   > ⚠️ No coding standards detected in this project.
-   >
-   > Proceeding may result in inconsistent code style.
-   >
-   > Would you like to:
-   > 1. Create coding standards first
-   > 2. Proceed without standards (go ahead)
-   > 3. Use built-in defaults
-
-4. Wait for user confirmation before proceeding.
+1. Search for coding standards in the project
+2. If found, note the file location for all agents
+3. If NOT found, pause and warn the user per guardrails.md
+4. Wait for user confirmation before proceeding
 
 ---
 
@@ -213,17 +193,18 @@ This step picks tickets from the todo list and implements them.
    b. Update manifest: Status = IN PROGRESS.
    c. Spawn the appropriate sub-agent based on ticket type:
 
-   | Ticket Type | Agent | Prompt |
-   |-------------|-------|--------|
-   | Implementation | developer | Implement ticket T-NNNN: [ticket content + project docs] |
-   | Design/UX | ui-ux-designer | Review design for ticket T-NNNN: [ticket content] |
-   | Documentation | doc-writer | Update documentation for ticket T-NNNN |
+   | Ticket Type | Agent | Specialist Agent | Prompt |
+   |-------------|-------|------------------|--------|
+   | Implementation | developer | ui-ux-designer (if frontend) | Implement ticket T-NNNN: [ticket content + project docs] |
+   | Design/UX | ui-ux-designer | N/A | Review design for ticket T-NNNN: [ticket content] |
+   | Documentation | doc-writer | ui-ux-designer (if design docs) | Update documentation for ticket T-NNNN |
 
    d. Wait for agent to complete. They report:
       - PR URL (if applicable)
       - Implementation summary
       - Files changed
       - Test results
+      - **Delegated tasks** (what was delegated to specialists)
 
    e. Update manifest with results.
 
